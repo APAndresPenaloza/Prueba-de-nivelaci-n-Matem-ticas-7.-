@@ -13,7 +13,7 @@ Prueba interactiva de selección múltiple con única respuesta (20 preguntas) p
 ## Características
 
 - Registro de nombre y curso del estudiante.
-- Cronómetro de 40 minutos; la prueba se entrega sola al acabarse el tiempo.
+- Cronómetro de 2 horas; la prueba se entrega sola al acabarse el tiempo.
 - Las opciones A–D se reordenan en cada intento para dificultar la copia.
 - Si se recarga la página, se conservan las respuestas.
 - Resultados con nota en escala 1.0–5.0 (aprueba con 3.0), desempeño por tema y revisión con el procedimiento de cada pregunta.
