@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prueba de nivelación – Matemáticas 7.º</title>
+<style>
+  :root{
+    --bg:#f5f3ee; --card:#ffffff; --ink:#1f2933; --muted:#5f6b76; --line:#e2ddd3;
+    --accent:#1d5c8c; --accent-soft:#e6f0f7; --ok:#1e7a46; --ok-soft:#e5f4ea;
+    --bad:#b3362b; --bad-soft:#fbe9e7; --warn:#a86a00;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  header.top{background:var(--accent);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+  header.top h1{font-size:1.05rem;margin:0;font-weight:600}
+  .timer{font-variant-numeric:tabular-nums;font-weight:700;background:rgba(255,255,255,.15);padding:4px 12px;border-radius:999px}
+  .timer.low{background:#fff;color:var(--bad)}
+  main{max-width:860px;margin:0 auto;padding:24px 16px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:18px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  h2{margin:0 0 8px;font-size:1.35rem}
+  h3{margin:18px 0 8px;font-size:1.05rem}
+  .muted{color:var(--muted)}
+  label{display:block;font-weight:600;margin:12px 0 4px}
+  input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:1rem}
+  input[type=text]:focus{outline:2px solid var(--accent);border-color:transparent}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.row{grid-template-columns:1fr}}
+  ul.instr{padding-left:20px;margin:8px 0}
+  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--accent);padding:10px 18px;background:var(--accent);color:#fff;font-weight:600}
+  button.sec{background:#fff;color:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .actions{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:20px}
+  .topic-tag{display:inline-block;font-size:.8rem;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:3px 10px;border-radius:999px;margin-bottom:10px}
+  .qnum{font-weight:700;color:var(--muted);font-size:.9rem}
+  .stem{font-size:1.1rem;margin:6px 0 16px}
+  .opts{display:grid;gap:10px}
+  .opt{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;background:#fff;transition:border-color .12s,background .12s}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .opt input{position:absolute;opacity:0;pointer-events:none}
+  .letter{flex:0 0 30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);display:grid;place-items:center;font-weight:700;color:var(--accent)}
+  .opt.sel .letter{background:var(--accent);color:#fff}
+  .opt-text{font-size:1.05rem}
+  .grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:8px}
+  @media(max-width:560px){.grid{grid-template-columns:repeat(5,1fr)}}
+  .grid button{padding:6px 0;background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:600}
+  .grid button.ans{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+  .grid button.cur{outline:2px solid var(--accent);outline-offset:1px}
+  .progress{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin:8px 0 4px}
+  .progress>div{height:100%;background:var(--accent);width:0;transition:width .2s}
+  /* fracciones apiladas */
+  .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px;font-size:.95em;line-height:1.1}
+  .fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}
+  .fr>span:last-child{padding:0 3px}
+  .paren{font-size:1.6em;vertical-align:middle;font-weight:300}
+  sup{font-size:.7em}
+  svg.fig{display:block;margin:6px auto 14px;max-width:320px;width:100%}
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+  .modal.show{display:flex}
+  .modal .card{max-width:440px;width:100%}
+  /* resultados */
+  .score{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0}
+  .score div{flex:1 1 140px;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .score b{display:block;font-size:1.8rem}
+  .pass{color:var(--ok)} .fail{color:var(--bad)}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.95rem}
+  th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left}
+  th{background:#faf8f4}
+  .bar{height:8px;background:var(--line);border-radius:999px;overflow:hidden;min-width:80px}
+  .bar>div{height:100%}
+  .rev{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+  .rev.ok{border-left:5px solid var(--ok)} .rev.bad{border-left:5px solid var(--bad)}
+  .rev .o{padding:4px 8px;border-radius:6px;margin:3px 0}
+  .rev .o.right{background:var(--ok-soft);color:var(--ok);font-weight:600}
+  .rev .o.wrong{background:var(--bad-soft);color:var(--bad);text-decoration:line-through}
+  .expl{margin-top:8px;background:#faf8f4;border-radius:8px;padding:10px 12px;font-size:.95rem}
+  .hidden{display:none!important}
+  @media print{
+    header.top,.actions,.no-print{display:none!important}
+    body{background:#fff}
+    .card{box-shadow:none;border:none;padding:0}
+    .rev{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Prueba de nivelación · Matemáticas grado 7.º</h1>
+  <span id="timer" class="timer hidden">40:00</span>
+</header>
+
+<main>
+  <!-- PANTALLA DE INICIO -->
+  <section id="inicio" class="card">
+    <h2>Prueba de nivelación – Matemáticas 7.º</h2>
+    <p class="muted" id="instName">Institución Educativa</p>
+    <div class="row">
+      <div><label for="nombre">Nombre completo</label><input id="nombre" type="text" autocomplete="name" placeholder="Ej.: Laura Gómez"></div>
+      <div><label for="curso">Curso</label><input id="curso" type="text" placeholder="Ej.: 702"></div>
+    </div>
+    <h3>Instrucciones</h3>
+    <ul class="instr">
+      <li>La prueba tiene <b>20 preguntas</b> de selección múltiple con <b>única respuesta</b>.</li>
+      <li>Temas: operaciones con fracciones, propiedades de la potencia en fracciones, teorema de Pitágoras, ecuaciones con fracciones y regla de tres simple y compuesta.</li>
+      <li>Tienes <b>40 minutos</b>. Cuando se acabe el tiempo, la prueba se entrega sola.</li>
+      <li>Puedes moverte entre preguntas y cambiar tus respuestas antes de entregar.</li>
+      <li>No se permite calculadora. Ten a mano lápiz y hoja para tus procedimientos.</li>
+      <li>Para aprobar la nivelación necesitas una nota de <b>3.0</b> o más (escala 1.0 a 5.0).</li>
+    </ul>
+    <p id="errInicio" class="fail hidden">Escribe tu nombre y tu curso para comenzar.</p>
+    <div class="actions"><span></span><button id="btnComenzar">Comenzar prueba</button></div>
+  </section>
+
+  <!-- PANTALLA DE PREGUNTAS -->
+  <section id="prueba" class="hidden">
+    <div class="card">
+      <div class="qnum" id="qnum"></div>
+      <div class="progress"><div id="prog"></div></div>
+      <span class="topic-tag" id="qtopic"></span>
+      <div class="stem" id="qstem"></div>
+      <div class="opts" id="qopts" role="radiogroup"></div>
+      <div class="actions">
+        <button class="sec" id="btnAnt">← Anterior</button>
+        <button class="sec" id="btnSig">Siguiente →</button>
+      </div>
+    </div>
+    <div class="card">
+      <b>Mapa de preguntas</b> <span class="muted" id="contest"></span>
+      <div class="grid" id="grid"></div>
+      <div class="actions"><span></span><button id="btnEntregar">Entregar prueba</button></div>
+    </div>
+  </section>
+
+  <!-- PANTALLA DE RESULTADOS -->
+  <section id="resultados" class="hidden">
+    <div class="card">
+      <h2>Resultados</h2>
+      <p class="muted" id="resDatos"></p>
+      <div class="score">
+        <div><span class="muted">Aciertos</span><b id="resAciertos"></b></div>
+        <div><span class="muted">Nota</span><b id="resNota"></b></div>
+        <div><span class="muted">Estado</span><b id="resEstado"></b></div>
+      </div>
+      <h3>Desempeño por tema</h3>
+      <table><thead><tr><th>Tema</th><th>Aciertos</th><th style="width:35%">Avance</th></tr></thead><tbody id="resTemas"></tbody></table>
+      <p class="muted" id="resRefuerzo"></p>
+      <div class="actions no-print">
+        <button class="sec" id="btnDescargar">Descargar resultados (.csv)</button>
+        <button class="sec" id="btnImprimir">Imprimir / guardar PDF</button>
+        <button id="btnNueva">Nueva prueba</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Revisión pregunta por pregunta</h2>
+      <div id="revision"></div>
+    </div>
+  </section>
+</main>
+
+<!-- MODAL DE CONFIRMACIÓN -->
+<div class="modal" id="modal">
+  <div class="card">
+    <h2>¿Entregar la prueba?</h2>
+    <p id="modalTxt"></p>
+    <div class="actions"><button class="sec" id="mNo">Seguir respondiendo</button><button id="mSi">Sí, entregar</button></div>
+  </div>
+</div>
+
+<script>
+/* =================== CONFIGURACIÓN (la puede editar el docente) =================== */
+const CONFIG = {
+  institucion: "Institución Educativa",   // nombre del colegio
+  minutos: 40,                            // tiempo de la prueba
+  notaAprobacion: 3.0,                    // escala 1.0 – 5.0
+  barajarOpciones: true,                  // cambia el orden de A-D en cada intento
+  barajarPreguntas: false                 // true = cambia el orden de las preguntas
+};
+
+/* =================== utilidades de presentación =================== */
+const f = (a,b) => `<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+const pf = (a,b,e) => `<span class="paren">(</span>${f(a,b)}<span class="paren">)</span><sup>${e}</sup>`;
+
+const TEMAS = [
+  "Operaciones con fracciones",
+  "Potencias en fracciones",
+  "Teorema de Pitágoras",
+  "Ecuaciones con fracciones",
+  "Regla de tres"
+];
+
+const triangulo = (a,b,c) => `
+<svg class="fig" viewBox="0 0 300 170" aria-hidden="true">
+  <polygon points="40,140 260,140 40,30" fill="#e6f0f7" stroke="#1d5c8c" stroke-width="2.5"/>
+  <polyline points="40,124 56,124 56,140" fill="none" stroke="#1d5c8c" stroke-width="2"/>
+  <text x="150" y="162" text-anchor="middle" font-size="15" fill="#1f2933">${a}</text>
+  <text x="30" y="90" text-anchor="end" font-size="15" fill="#1f2933">${b}</text>
+  <text x="160" y="76" text-anchor="start" font-size="15" fill="#1f2933">${c}</text>
+</svg>`;
+
+const escalera = `
+<svg class="fig" viewBox="0 0 300 190" aria-hidden="true">
+  <rect x="230" y="10" width="20" height="160" fill="#d9d2c3"/>
+  <line x1="20" y1="170" x2="290" y2="170" stroke="#5f6b76" stroke-width="2"/>
+  <line x1="120" y1="170" x2="230" y2="35" stroke="#a86a00" stroke-width="5"/>
+  <polyline points="214,170 214,154 230,154" fill="none" stroke="#1d5c8c" stroke-width="2"/>
+  <text x="175" y="186" text-anchor="middle" font-size="14">5 m</text>
+  <text x="160" y="95" text-anchor="end" font-size="14">13 m</text>
+  <text x="262" y="105" font-size="14">¿?</text>
+</svg>`;
+
+/* =================== BANCO DE PREGUNTAS (respuestas verificadas) ===================
+   c = índice de la opción correcta en el arreglo "o" (antes de barajar).          */
+const PREGUNTAS = [
+  // ---------- 1. Fracciones ----------
+  { t:0, s:`¿Cuál es el resultado de ${f(2,3)} + ${f(1,4)}?`,
+    o:[f(2,12), f(3,12), f(3,7), f(11,12)], c:3,
+    e:`Se busca el m.c.m. de 3 y 4, que es 12: ${f(8,12)} + ${f(3,12)} = ${f(11,12)}. El error ${f(3,7)} aparece al sumar numeradores con numeradores y denominadores con denominadores.` },
+  { t:0, s:`¿Cuál es el resultado de ${f(3,5)} ÷ ${f(9,10)}?`,
+    o:[f(1,2), f(27,50), f(2,3), f(3,2)], c:2,
+    e:`Se multiplica por el inverso del divisor: ${f(3,5)} × ${f(10,9)} = ${f(30,45)} = ${f(2,3)}. ${f(27,50)} sale de multiplicar en vez de dividir; ${f(3,2)} de invertir la fracción equivocada.` },
+  { t:0, s:`Resuelve respetando el orden de las operaciones: ${f(1,2)} + ${f(1,3)} × ${f(3,4)}`,
+    o:[f(1,4), f(5,8), f(3,4), f(7,6)], c:2,
+    e:`Primero la multiplicación: ${f(1,3)} × ${f(3,4)} = ${f(1,4)}. Luego la suma: ${f(1,2)} + ${f(1,4)} = ${f(3,4)}. Si se suma primero se obtiene ${f(5,8)}, que es incorrecto.` },
+  { t:0, s:`Don Pedro siembra ${f(2,5)} de su finca con café y ${f(1,3)} con plátano. ¿Qué fracción de la finca queda sin sembrar?`,
+    o:[f(2,15), f(4,15), f(5,8), f(11,15)], c:1,
+    e:`Sembrado: ${f(2,5)} + ${f(1,3)} = ${f(6,15)} + ${f(5,15)} = ${f(11,15)}. Sin sembrar: 1 − ${f(11,15)} = ${f(4,15)}. ${f(11,15)} es lo sembrado, no lo que queda.` },
+
+  // ---------- 2. Potencias ----------
+  { t:1, s:`Aplicando las propiedades de la potencia, ${pf(2,3,3)} · ${pf(2,3,2)} es igual a:`,
+    o:[pf(2,3,1), pf(2,3,5), pf(2,3,6), pf(4,9,5)], c:1,
+    e:`Producto de potencias de igual base: se conserva la base y se <b>suman</b> los exponentes: 3 + 2 = 5. Multiplicar exponentes (6) es el error más común.` },
+  { t:1, s:`¿A qué es igual <span class="paren">[</span>${pf(1,2,2)}<span class="paren">]</span><sup>3</sup>?`,
+    o:[pf(1,2,5), pf(1,2,6), pf(1,2,8), pf(1,2,9)], c:1,
+    e:`Potencia de una potencia: se <b>multiplican</b> los exponentes: 2 × 3 = 6, es decir ${pf(1,2,6)} = ${f(1,64)}. Sumarlos (5) es un error.` },
+  { t:1, s:`¿Cuál es el valor de ${pf(3,4,"−2")}?`,
+    o:["−" + f(16,9), "−" + f(9,16), f(9,16), f(16,9)], c:3,
+    e:`Un exponente negativo invierte la fracción: ${pf(3,4,"−2")} = ${pf(4,3,2)} = ${f(16,9)}. El exponente negativo <b>no</b> vuelve negativo el resultado.` },
+  { t:1, s:`¿Cuál es el resultado de ${pf(5,7,0)} + ${pf("−1",2,3)}?`,
+    o:["−" + f(1,8), f(1,8), f(7,8), f(9,8)], c:2,
+    e:`Toda base distinta de cero elevada a 0 es 1. Además, ${pf("−1",2,3)} = −${f(1,8)} (exponente impar conserva el signo). Entonces 1 − ${f(1,8)} = ${f(7,8)}. ${f(1,8)} sale de creer que la potencia 0 da 0.` },
+
+  // ---------- 3. Pitágoras ----------
+  { t:2, s:`Los catetos de un triángulo rectángulo miden 6 cm y 8 cm. ¿Cuánto mide la hipotenusa?${triangulo("8 cm","6 cm","¿?")}`,
+    o:["7 cm","10 cm","14 cm","100 cm"], c:1,
+    e:`h² = 6² + 8² = 36 + 64 = 100, entonces h = √100 = 10 cm. 14 cm es sumar los catetos sin elevarlos; 100 cm es olvidar sacar la raíz.` },
+  { t:2, s:`Una escalera de 13 m se apoya en una pared y su base queda a 5 m de ella. ¿A qué altura toca la pared?${escalera}`,
+    o:["8 m","12 m","13,9 m","18 m"], c:1,
+    e:`La escalera es la hipotenusa: altura² = 13² − 5² = 169 − 25 = 144, altura = 12 m. 13,9 m sale de sumar los cuadrados en lugar de restarlos.` },
+  { t:2, s:`¿Cuál de estas medidas (en cm) corresponde a los lados de un triángulo rectángulo?`,
+    o:["2, 3 y 4","4, 5 y 6","5, 12 y 13","6, 7 y 9"], c:2,
+    e:`Se comprueba si el cuadrado del lado mayor es igual a la suma de los cuadrados de los otros dos: 5² + 12² = 25 + 144 = 169 = 13². En los demás casos no se cumple.` },
+  { t:2, s:`Una cancha rectangular mide 40 m de largo y 30 m de ancho. ¿Cuánto mide su diagonal?`,
+    o:["26,5 m","50 m","70 m","2.500 m"], c:1,
+    e:`La diagonal es la hipotenusa: d² = 40² + 30² = 1.600 + 900 = 2.500, d = 50 m. 70 m es sumar los lados; 2.500 m es olvidar la raíz.` },
+
+  // ---------- 4. Ecuaciones ----------
+  { t:3, s:`Si ${f("x",3)} + ${f(1,2)} = ${f(5,6)}, ¿cuál es el valor de x?`,
+    o:[f(1,3), "1", "2", "4"], c:1,
+    e:`${f("x",3)} = ${f(5,6)} − ${f(1,2)} = ${f(5,6)} − ${f(3,6)} = ${f(1,3)}. Luego x = 3 · ${f(1,3)} = 1. ${f(1,3)} es el valor de ${f("x",3)}, no de x.` },
+  { t:3, s:`Resuelve: ${f("2x",5)} − 1 = ${f(3,5)}`,
+    o:[f(4,5), "1", "4", "8"], c:2,
+    e:`${f("2x",5)} = ${f(3,5)} + 1 = ${f(8,5)} → 2x = 8 → x = 4.` },
+  { t:3, s:`Camila gastó ${f(1,2)} de su dinero en el bus y ${f(1,3)} en el almuerzo. En total gastó $10.000. ¿Cuánto dinero tenía?`,
+    o:["$6.000","$12.000","$25.000","$60.000"], c:1,
+    e:`${f("x",2)} + ${f("x",3)} = 10.000. Multiplicando por 6: 3x + 2x = 60.000 → 5x = 60.000 → x = $12.000. $25.000 sale de sumar denominadores (${f("2x",5)}); $60.000 de olvidar dividir entre 5.` },
+  { t:3, s:`Juan resolvió ${f("x",4)} − 2 = ${f(1,2)} así: “multiplico por 4: x − 2 = 2, entonces x = 4”. ¿Cuál fue su error?`,
+    o:["Debió multiplicar por 8, porque el m.c.m. de 4 y 2 es 8",
+       "No multiplicó el −2 por 4; debía quedar x − 8 = 2",
+       "Debió dividir entre 4 en lugar de multiplicar",
+       "Al pasar el −2 al otro lado debía restarlo"], c:1,
+    e:`Al multiplicar por 4 hay que multiplicar <b>todos</b> los términos: x − 8 = 2, entonces x = 10. Comprobación: ${f(10,4)} − 2 = ${f(1,2)}. ✔` },
+
+  // ---------- 5. Regla de tres ----------
+  { t:4, s:`En la tienda del barrio, 4 kg de arroz cuestan $12.000. ¿Cuánto cuestan 7 kg?`,
+    o:["$15.000","$19.000","$21.000","$28.000"], c:2,
+    e:`Regla de tres directa (más kilos, más dinero): 12.000 × 7 ÷ 4 = $21.000.` },
+  { t:4, s:`6 obreros construyen un muro en 10 días. ¿Cuántos días tardarán 15 obreros trabajando al mismo ritmo?`,
+    o:["4 días","9 días","19 días","25 días"], c:0,
+    e:`Regla de tres inversa (más obreros, menos días): 10 × 6 ÷ 15 = 4 días. 25 días sale de tratarla como directa.` },
+  { t:4, s:`5 máquinas producen 300 piezas en 4 horas. ¿Cuántas piezas producirán 8 máquinas en 6 horas?`,
+    o:["320","450","480","720"], c:3,
+    e:`Ambas magnitudes son directas (más máquinas y más horas → más piezas): 300 × ${f(8,5)} × ${f(6,4)} = 720 piezas. 480 y 450 consideran solo una magnitud; 320 invierte la razón de las horas.` },
+  { t:4, s:`8 obreros, trabajando 6 horas diarias, terminan una obra en 12 días. ¿En cuántos días la terminarán 12 obreros trabajando 8 horas diarias?`,
+    o:["6","8","9","24"], c:0,
+    e:`Ambas magnitudes son inversas con los días (más obreros o más horas → menos días): 12 × ${f(8,12)} × ${f(6,8)} = 6 días. 24 sale de tratarlas como directas.` }
+];
+
+/* =================== estado =================== */
+const LET = ["A","B","C","D"];
+let st = null;            // {nombre,curso,orden,perms,resp,actual,fin,inicio}
+let tick = null;
+const $ = id => document.getElementById(id);
+const KEY = "nivelacion_mate7_v1";
+
+function guardar(){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
+function cargar(){ try{ return JSON.parse(localStorage.getItem(KEY)); }catch(e){ return null; } }
+function borrar(){ try{ localStorage.removeItem(KEY); }catch(e){} }
+
+function barajar(n){
+  const a=[...Array(n).keys()];
+  for(let i=n-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+/* =================== flujo =================== */
+$("instName").textContent = CONFIG.institucion;
+
+$("btnComenzar").onclick = () => {
+  const nombre=$("nombre").value.trim(), curso=$("curso").value.trim();
+  if(!nombre||!curso){ $("errInicio").classList.remove("hidden"); return; }
+  const orden = CONFIG.barajarPreguntas ? barajar(PREGUNTAS.length) : [...PREGUNTAS.keys()];
+  st = {
+    nombre, curso, orden,
+    perms: PREGUNTAS.map(q => CONFIG.barajarOpciones ? barajar(q.o.length) : [0,1,2,3]),
+    resp: Array(PREGUNTAS.length).fill(null),   // índice original elegido
+    actual: 0,
+    inicio: Date.now(),
+    fin: Date.now() + CONFIG.minutos*60000,
+    entregado: false
+  };
+  guardar(); abrirPrueba();
+};
+
+function abrirPrueba(){
+  $("inicio").classList.add("hidden");
+  $("prueba").classList.remove("hidden");
+  $("timer").classList.remove("hidden");
+  construirGrid(); mostrar();
+  clearInterval(tick); tick=setInterval(reloj,1000); reloj();
+}
+
+function reloj(){
+  const ms = st.fin - Date.now();
+  if(ms<=0){ $("timer").textContent="00:00"; entregar(); return; }
+  const m=Math.floor(ms/60000), s=Math.floor(ms/1000)%60;
+  $("timer").textContent = `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  $("timer").classList.toggle("low", ms < 5*60000);
+}
+
+function mostrar(){
+  const pos = st.actual, qi = st.orden[pos], q = PREGUNTAS[qi];
+  $("qnum").textContent = `Pregunta ${pos+1} de ${PREGUNTAS.length}`;
+  $("qtopic").textContent = TEMAS[q.t];
+  $("qstem").innerHTML = q.s;
+  const cont = $("qopts"); cont.innerHTML="";
+  st.perms[qi].forEach((oi, k) => {
+    const lab = document.createElement("label");
+    lab.className = "opt" + (st.resp[qi]===oi ? " sel" : "");
+    lab.innerHTML = `<input type="radio" name="op" ${st.resp[qi]===oi?"checked":""}><span class="letter">${LET[k]}</span><span class="opt-text">${q.o[oi]}</span>`;
+    lab.onclick = (ev) => { ev.preventDefault(); st.resp[qi]=oi; guardar(); mostrar(); };
+    cont.appendChild(lab);
+  });
+  $("btnAnt").disabled = pos===0;
+  $("btnSig").disabled = pos===PREGUNTAS.length-1;
+  actualizarGrid();
+}
+
+function construirGrid(){
+  const g=$("grid"); g.innerHTML="";
+  PREGUNTAS.forEach((_,i)=>{
+    const b=document.createElement("button"); b.textContent=i+1;
+    b.onclick=()=>{ st.actual=i; guardar(); mostrar(); window.scrollTo({top:0,behavior:"smooth"}); };
+    g.appendChild(b);
+  });
+}
+function actualizarGrid(){
+  const btns=$("grid").children; let n=0;
+  st.orden.forEach((qi,pos)=>{
+    const r = st.resp[qi]!==null; if(r) n++;
+    btns[pos].className = (r?"ans ":"") + (pos===st.actual?"cur":"");
+  });
+  $("contest").textContent = `· ${n} de ${PREGUNTAS.length} respondidas`;
+  $("prog").style.width = (n/PREGUNTAS.length*100)+"%";
+}
+
+$("btnAnt").onclick=()=>{ st.actual--; guardar(); mostrar(); };
+$("btnSig").onclick=()=>{ st.actual++; guardar(); mostrar(); };
+
+$("btnEntregar").onclick=()=>{
+  const faltan = st.resp.filter(r=>r===null).length;
+  $("modalTxt").textContent = faltan
+    ? `Te faltan ${faltan} pregunta(s) por responder. Las preguntas sin respuesta cuentan como incorrectas.`
+    : "Respondiste todas las preguntas. Después de entregar no podrás cambiar tus respuestas.";
+  $("modal").classList.add("show");
+};
+$("mNo").onclick=()=>$("modal").classList.remove("show");
+$("mSi").onclick=()=>{ $("modal").classList.remove("show"); entregar(); };
+
+function calcular(){
+  const porTema = TEMAS.map(()=>({ok:0,total:0}));
+  let ok=0;
+  PREGUNTAS.forEach((q,i)=>{ porTema[q.t].total++; if(st.resp[i]===q.c){ ok++; porTema[q.t].ok++; } });
+  const nota = Math.round((1 + 4*ok/PREGUNTAS.length)*10)/10;
+  return {ok, nota, porTema, aprueba: nota >= CONFIG.notaAprobacion};
+}
+
+function entregar(){
+  if(st.entregado && !$("resultados").classList.contains("hidden")) return;
+  clearInterval(tick);
+  if(!st.entregado){ st.entregado=true; st.entrega=Date.now(); guardar(); }
+  $("prueba").classList.add("hidden"); $("timer").classList.add("hidden");
+  $("inicio").classList.add("hidden");
+  $("resultados").classList.remove("hidden");
+
+  const r = calcular();
+  const min = Math.max(1, Math.round((st.entrega - st.inicio)/60000));
+  $("resDatos").textContent = `${st.nombre} · Curso ${st.curso} · ${new Date(st.entrega).toLocaleString("es-CO")} · Tiempo usado: ${min} min`;
+  $("resAciertos").textContent = `${r.ok} / ${PREGUNTAS.length}`;
+  $("resNota").textContent = r.nota.toFixed(1);
+  $("resNota").className = r.aprueba ? "pass" : "fail";
+  $("resEstado").textContent = r.aprueba ? "Aprobó" : "No aprobó";
+  $("resEstado").className = r.aprueba ? "pass" : "fail";
+
+  $("resTemas").innerHTML = r.porTema.map((p,i)=>{
+    const pct = p.ok/p.total*100, col = pct>=75?"var(--ok)":pct>=50?"var(--warn)":"var(--bad)";
+    return `<tr><td>${TEMAS[i]}</td><td>${p.ok} / ${p.total}</td><td><div class="bar"><div style="width:${pct}%;background:${col}"></div></div></td></tr>`;
+  }).join("");
+  const debiles = r.porTema.map((p,i)=>({i,pct:p.ok/p.total})).filter(x=>x.pct<0.5).map(x=>TEMAS[x.i]);
+  $("resRefuerzo").textContent = debiles.length ? `Temas para reforzar: ${debiles.join(", ")}.` : "¡Buen trabajo! No hay temas con menos de la mitad de aciertos.";
+
+  $("revision").innerHTML = st.orden.map((qi,pos)=>{
+    const q=PREGUNTAS[qi], elegido=st.resp[qi], bien = elegido===q.c;
+    const ops = st.perms[qi].map((oi,k)=>{
+      let cls="o"; if(oi===q.c) cls+=" right"; else if(oi===elegido) cls+=" wrong";
+      return `<div class="${cls}">${LET[k]}) ${q.o[oi]}${oi===q.c?" ✔":""}${oi===elegido&&oi!==q.c?" (tu respuesta)":""}</div>`;
+    }).join("");
+    return `<div class="rev ${bien?"ok":"bad"}">
+      <div class="qnum">Pregunta ${pos+1} · ${TEMAS[q.t]} · ${bien?"Correcta":(elegido===null?"Sin responder":"Incorrecta")}</div>
+      <div class="stem">${q.s}</div>${ops}
+      <div class="expl"><b>Procedimiento:</b> ${q.e}</div></div>`;
+  }).join("");
+  window.scrollTo({top:0});
+}
+
+$("btnImprimir").onclick=()=>window.print();
+$("btnNueva").onclick=()=>{ borrar(); location.reload(); };
+$("btnDescargar").onclick=()=>{
+  const r=calcular();
+  const filas=[["Nombre","Curso","Fecha","Aciertos","Total","Nota","Estado",...TEMAS,...PREGUNTAS.map((_,i)=>"P"+(i+1))]];
+  const letraDe = qi => { const e=st.resp[qi]; if(e===null) return "-"; const k=st.perms[qi].indexOf(e); return LET[k] + (e===PREGUNTAS[qi].c?"✔":"✘"); };
+  filas.push([st.nombre,st.curso,new Date(st.entrega).toLocaleString("es-CO"),r.ok,PREGUNTAS.length,r.nota.toFixed(1),r.aprueba?"Aprobó":"No aprobó",
+    ...r.porTema.map(p=>`${p.ok}/${p.total}`), ...st.orden.map(letraDe)]);
+  const csv = "﻿" + filas.map(f=>f.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(";")).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download=`nivelacion_mate7_${st.nombre.replace(/\s+/g,"_")}.csv`; a.click();
+};
+
+/* =================== reanudar si se recargó la página =================== */
+(function(){
+  const prev = cargar();
+  if(!prev) return;
+  st = prev;
+  if(st.entregado || Date.now() >= st.fin){ entregar(); }
+  else { abrirPrueba(); }
+})();
+</script>
+</body>
+</html>
